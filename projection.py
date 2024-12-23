@@ -4,9 +4,11 @@ import random
 from bpy_extras.object_utils import world_to_camera_view
 
 
+path = "/home/sh4ring4n/University/cv"
+
 def import_mesh():
      # Path to your FBX file
-    fbx_path = "/home/sh4ring4n/University/cv/GiuliaRigged.fbx"
+    fbx_path = f"{path}/GiuliaRigged.fbx"
 
     # Import the FBX file
     bpy.ops.import_scene.fbx(filepath=fbx_path)
@@ -170,10 +172,10 @@ def main():
 
     # Save and register 2D coordinates
     coordinates = save_2d_coordinates(camera, random_points)
-    with open("/home/sh4ring4n/University/cv/3D_coordinates.txt", 'w') as file:
+    with open(f"{path}/CV_project/3D_coordinates.txt", 'w') as file:
         file.writelines(f"{point.x},{point.y},{point.z}\n" for point in random_points)
     
-    with open("/home/sh4ring4n/University/cv/2D_coordinates.txt", 'w') as file:
+    with open(f"{path}/CV_project/2D_coordinates.txt", 'w') as file:
         file.writelines(f"{point[0]},{point[1]}\n" for point in coordinates)
         
     

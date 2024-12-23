@@ -19,6 +19,7 @@ def draw_points(image_path, coordinates_file, output_path):
     # Read coordinates from the text file
     try:
         with open(coordinates_file, 'r') as file:
+            
             for line in file:
                 # Parse each line to extract normalized coordinates
                 try:
@@ -43,7 +44,7 @@ def draw_points(image_path, coordinates_file, output_path):
 image_path = "./rotated_render.png"
 # image_path = "./render.png"
 
-coordinates_file = "2D_coordinates.txt"
+coordinates_file = "bones_2D_coordinates.txt"
 output_path = "./out/out.png"
 
 draw_points(image_path, coordinates_file, output_path)
