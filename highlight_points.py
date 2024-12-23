@@ -1,11 +1,12 @@
 import cv2
 
-def draw_points(image_path, coordinates_file, output_path):
+def draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path):
     """
-    Draws green points on an image at specified normalized coordinates.
+    Draws a skeleton on an image using normalized coordinates and bone pairs.
 
     :param image_path: Path to the input image.
     :param coordinates_file: Path to the text file containing normalized 2D coordinates.
+    :param bone_pairs_file: Path to the text file containing bone pairs.
     :param output_path: Path to save the output image.
     """
     # Read the image
@@ -16,35 +17,52 @@ def draw_points(image_path, coordinates_file, output_path):
 
     height, width, _ = image.shape  # Get the dimensions of the image
 
-    # Read coordinates from the text file
+    # Load 2D coordinates
+    coordinates = {}
     try:
         with open(coordinates_file, 'r') as file:
-            
             for line in file:
-                # Parse each line to extract normalized coordinates
-                try:
-                    norm_x, norm_y = map(float, line.strip().split(','))
-                    # Convert normalized coordinates to pixel values
-                    x = int(norm_x * width)
-                    y = int(norm_y * height)
-                    # Draw a green circle on the image
-                    cv2.circle(image, (x, y), radius=5, color=(0, 255, 0), thickness=-1)
-                except ValueError:
-                    print(f"Invalid coordinate format: {line.strip()}")
+                bone_name, norm_x, norm_y = line.strip().split(',')
+                # Flip the Y-coordinate to match image coordinate origin
+                coordinates[bone_name] = (float(norm_x) * width, (1 - float(norm_y)) * height)
     except FileNotFoundError:
-        print(f"Error: File {coordinates_file} not found.")
+        print(f"Error: Coordinates file {coordinates_file} not found.")
         return
 
-    # Save the modified image
+    # Load bone pairs
+    bone_pairs = []
+    try:
+        with open(bone_pairs_file, 'r') as file:
+            for line in file:
+                child, parent = line.strip().split(',')
+                bone_pairs.append((child, parent))
+    except FileNotFoundError:
+        print(f"Error: Bone pairs file {bone_pairs_file} not found.")
+        return
+
+    # Draw skeleton lines
+    for child, parent in bone_pairs:
+        if child in coordinates and parent in coordinates:
+            child_coord = coordinates[child]
+            parent_coord = coordinates[parent]
+            cv2.line(image, (int(child_coord[0]), int(child_coord[1])),
+                     (int(parent_coord[0]), int(parent_coord[1])),
+                     color=(0, 0, 255), thickness=2)
+
+    # Draw points
+    for coord in coordinates.values():
+        cv2.circle(image, (int(coord[0]), int(coord[1])), radius=5, color=(0, 255, 0), thickness=-1)
+
+    # Save the final image
     cv2.imwrite(output_path, image)
-    print(f"Output image saved to {output_path}")
+    print(f"Skeleton image saved to {output_path}")
 
+    # Debugging output for verification
+    print("Coordinates:")
+    for bone_name, coord in coordinates.items():
+        print(f"{bone_name}: {coord}")
 
-# Example usage
-image_path = "./rotated_render.png"
-# image_path = "./render.png"
+    print("\nBone pairs:")
+    for child, parent in bone_pairs:
+        print(f"{child} -> {parent}")
 
-coordinates_file = "bones_2D_coordinates.txt"
-output_path = "./out/out.png"
-
-draw_points(image_path, coordinates_file, output_path)
