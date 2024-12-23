@@ -1,5 +1,5 @@
 def extract_3d_coordinates(armature,output_file_path_3d,output_file):
-
+    avoid_linking_bones = [("ik_hand_root","root"),("ik_hand_gun","ik_hand_root"),("ik_hand_r","ik_hand_gun"),("ik_hand_l","ik_hand_gun")]
     bone_pairs = []
     # Retrieve the global coordinates of all bones
     bone_coordinates_3d = []
@@ -7,7 +7,8 @@ def extract_3d_coordinates(armature,output_file_path_3d,output_file):
         for bone in armature.pose.bones:
             
             if bone.parent:
-                bone_pairs.append((bone.name, bone.parent.name))
+                if (bone.name,bone.parent.name) not in avoid_linking_bones:
+                    bone_pairs.append((bone.name, bone.parent.name))
             # Get the global position of the bone head
             bone_global_position = armature.matrix_world @ bone.head
             bone_coordinates_3d.append((bone.name, bone_global_position))
@@ -25,3 +26,7 @@ def extract_3d_coordinates(armature,output_file_path_3d,output_file):
 
     print(f"3D bone coordinates have been saved to {output_file_path_3d}")
     return bone_coordinates_3d
+
+
+
+
