@@ -1,5 +1,9 @@
 import bpy
 def setup_env(fbx_file_path):
+
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete()
         
     # Import the FBX file
     bpy.ops.import_scene.fbx(filepath=fbx_file_path)
@@ -21,8 +25,8 @@ def setup_env(fbx_file_path):
     # Add a camera object
     camera = bpy.data.objects.new("Camera", bpy.data.cameras.new("Camera"))
     bpy.context.collection.objects.link(camera)
-    camera.location = (0, -2, 25)
-    camera.rotation_euler = (0.13, 0, 0)
+    camera.location = (0, -2, 25)  # 0, -2, 25
+    camera.rotation_euler = (0.13, 0, 0) # 0.13, 0, 0
     bpy.context.scene.camera = camera
     bpy.context.view_layer.update()
     return (camera,armature)
