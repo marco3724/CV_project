@@ -2,6 +2,24 @@ import os
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
 
+def is_point_visible(ndc):
+    """
+    Determines if a point in NDC is visible within the camera's view frustum.
+    
+    :param ndc: Vector containing NDC coordinates (x, y, z)
+    :return: Boolean indicating visibility
+    """
+    # Check if the point is in front of the camera
+    if ndc.z < 0.0:
+        return False
+
+    # Check if the point is within the horizontal and vertical bounds
+    if 0.0 <= ndc.x <= 1.0 and 0.0 <= ndc.y <= 1.0:
+        return True
+    else:
+        return False
+
+
 
 def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
     # Retrieve the 2D coordinates of all bones
@@ -9,8 +27,11 @@ def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
     scene = bpy.context.scene
     for bone_name, coord in bone_coordinates_3d:
         # Convert 3D global coordinates to 2D screen space
+
         coord_2d = world_to_camera_view(scene, camera, coord)
-        bone_coordinates_2d.append((bone_name, coord_2d))
+
+        if is_point_visible(coord_2d):
+            bone_coordinates_2d.append((bone_name, coord_2d))
 
     # Write the 2D bone coordinates to a text file
     with open(output_file_path_2d, "w") as file:
