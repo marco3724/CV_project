@@ -11,9 +11,13 @@ blender_path = "/usr/bin/blender"
 
 # Path to the Blender script you want to execute
 script_path = "./extract_info.py"
-print( sys.argv[1:])
+# Prepare arguments - include -n properly
+arguments = [blender_path, '--background', '--python', script_path,"--"] + sys.argv[1:]
+
+# Print arguments for debugging
+print("Arguments:", arguments)
 # Call Blender from the command line with the script
-subprocess.run([blender_path, '--background', '--python', script_path] + sys.argv[1:])
+subprocess.run(arguments)
 
 
 

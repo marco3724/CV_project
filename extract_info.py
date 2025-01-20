@@ -12,8 +12,8 @@ from projection_2D import projection
 from estimate_3D_coordinates import compute_3d_points
 from utility import parse_args
 
-args = parse_args(sys.argv[4:])
-
+args = parse_args(sys.argv[5:])
+print(sys.argv[5:])
 ncam = 2 if  "n" not in args else  int(args["n"])
 ncam = 2 if ncam>2 else ncam
 
