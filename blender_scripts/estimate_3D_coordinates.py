@@ -1,5 +1,6 @@
-import numpy as np
 import bpy
+import numpy as np
+import cv2
 
 # Load 2D coordinates from the file
 def load_2d_coordinates(file_path):
@@ -13,90 +14,173 @@ def load_2d_coordinates(file_path):
             points_2d[label] = (x, y)
     return points_2d
 
-# Function to get the intrinsic matrix of a camera
-def get_intrinsic_matrix(camera, scene):
-    focal_length = camera.lens  # in mm
-    sensor_width = camera.sensor_width  # in mm
-    resolution_x = scene.render.resolution_x
-    resolution_y = scene.render.resolution_y
-    scale = scene.render.resolution_percentage / 100
 
-    # Adjust resolution based on scale
-    resolution_x *= scale
-    resolution_y *= scale
 
-    # Focal lengths in pixel units
-    f_x = (focal_length / sensor_width) * resolution_x
-    f_y = (focal_length / sensor_width) * resolution_y
-    c_x = resolution_x / 2
-    c_y = resolution_y / 2
+import bpy
+import mathutils
 
-    # Intrinsic matrix
-    K = np.array([
-        [f_x, 0,   c_x],
-        [0,   f_y, c_y],
-        [0,   0,   1]
-    ])
-    return K
-
-# Function to get the extrinsic matrix of a camera
-def get_extrinsic_matrix(camera):
-    cam_matrix = camera.matrix_world
-    rotation_matrix = cam_matrix.to_3x3()
-    translation_vector = cam_matrix.to_translation()
+def get_camera_intrinsics_and_pp(camera_obj, scene):
+    """
+    Retrieve focal length in pixel units (f) and principal point (cx, cy)
+    from the Blender camera and the scene's render settings.
+    This is a simplified approach (no distortion).
+    """
+    cam_data = camera_obj.data
+    render = scene.render
     
-    # Convert to NumPy arrays
-    rot = np.array(rotation_matrix)
-    trans = np.array(translation_vector)
+    # Render dimensions
+    width  = render.resolution_x
+    height = render.resolution_y
     
-    # Create 3x4 extrinsic matrix
-    extrinsic = np.hstack((rot, trans.reshape(3, 1)))
-    return extrinsic
+    # Focal length in mm
+    focal_mm = cam_data.lens
+    
+    # Sensor size in mm. We pick sensor_width unless sensor_fit='VERTICAL'
+    if cam_data.sensor_fit != 'VERTICAL':
+        sensor_size_mm = cam_data.sensor_width
+    else:
+        sensor_size_mm = cam_data.sensor_height
 
-# Triangulation function
-def triangulate_points(p1, p2, cam1, cam2):
-    A = np.zeros((4, 4))
-    A[0] = p1[0] * cam1[2] - cam1[0]
-    A[1] = p1[1] * cam1[2] - cam1[1]
-    A[2] = p2[0] * cam2[2] - cam2[0]
-    A[3] = p2[1] * cam2[2] - cam2[1]
+    # Convert focal length in mm -> focal length in pixel units
+    # (assuming no special aspect ratio issues for simplicity)
+    f = (focal_mm / sensor_size_mm) * width
+    
+    # Principal point (cx, cy):
+    # Start at the center
+    cx = width  * 0.5
+    cy = height * 0.5
+    
+    # Add lens shift if any (in normalized sensor coords)
+    shift_x = cam_data.shift_x
+    shift_y = cam_data.shift_y
+    cx += shift_x * width
+    cy += shift_y * height
+    
+    return f, cx, cy
 
-    _, _, Vt = np.linalg.svd(A)
-    X = Vt[-1]
-    return X[:3] / X[3]
+def get_baseline(camera_left, camera_right):
+    """
+    Returns the distance (baseline) between the two camera centers in 3D space.
+    If the cameras are truly parallel along the X-axis, this is effectively
+    the difference in X coordinates. But we'll compute the full Euclidean distance.
+    """
+    loc_left = camera_left.matrix_world.translation
+    loc_right = camera_right.matrix_world.translation
+    baseline_vector = loc_right - loc_left
+    return baseline_vector.length
 
-# Main function to process the file and compute 3D points
-def compute_3d_points(points2D_1,points2D_2,cam1,cam2):
+def stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline):
+    """
+    Triangulates a 3D point under a parallel stereo assumption:
+    - (uL, vL) in left camera
+    - (uR, vR) in right camera
+    - f : focal length (in pixel units)
+    - (cx, cy): principal point
+    - baseline: distance between cameras
+    
+    Returns a Vector((X, Y, Z)) in the LEFT camera coordinate system,
+    assuming the left camera is at (0,0,0) looking along +Z 
+    with the image plane at Z=f and principal point at (cx, cy).
+    """
+    # Disparity
+    disparity = (uL - uR)
+    if abs(disparity) < 1e-9:
+        print("Warning: Disparity is near zero; point might be infinitely far or matched incorrectly.")
+        return None
+
+    # Depth from the standard formula Z = f * B / disparity
+    Z = (f * baseline) / disparity
+
+    # X, Y from the left camera's perspective
+    X = (uL - cx) * Z / f
+    Y = (vL - cy) * Z / f
+
+    return mathutils.Vector((X, Y, Z))
+
+
+def compute_3d_points(pts1, pts2, cam1, cam2):
+# Get the scene
     scene = bpy.context.scene
 
+    # Identify your cameras by name
+    camera_left_obj = cam1
+    camera_right_obj = cam2
 
- 
+    print("Computing 3D points \n\n")
+    
+    if camera_left_obj is None or camera_right_obj is None:
+        print("Error: Could not find CameraLeft or CameraRight.")
+        return
 
-
-    # Get camera matrices
-    K1 = get_intrinsic_matrix(cam1.data, scene)
-    K2 = get_intrinsic_matrix(cam2.data, scene)
-    E1 = get_extrinsic_matrix(cam1)
-    E2 = get_extrinsic_matrix(cam2)
-
-    # Projection matrices
-    P1 = K1 @ E1
-    P2 = K2 @ E2
-
-    # Compute 3D points
+    # Example 2D points for the SAME feature in each camera
+    # (These are hypothetical pixel coords in the final render)
     points_3d = {}
-    print(points2D_1)
-    for i,(label, (x, y,z)) in enumerate(points2D_1):
+    for ((name, coord1),(_, coord2)) in zip(pts1, pts2):
+
+        xL = coord1[0]
+        yL = coord1[1]
+        xR = coord2[0]
+        yR = coord2[1]
+
+        width = scene.render.resolution_x
+        height = scene.render.resolution_y
+
+        uL = xL * width
+        # Sometimes Blender’s y=0 is at the bottom; for a standard top-left origin, you might do:
+        vL = (1 - yL) * height
+
+        uR = xR * width
+        # Sometimes Blender’s y=0 is at the bottom; for a standard top-left origin, you might do:
+        vR = (1 - yR) * height
+
+        # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
+        f, cx, cy = get_camera_intrinsics_and_pp(camera_left_obj, scene)
+     
         
-        # Assume the same 2D point in both cameras for simplicity
-        # Replace with actual 2D points from both cameras if available
-        p1 = np.array([x, y, 1])
-        label, (x2,y2,z2) = points2D_2[i]
-        p2 = np.array([x2, y2, 1])  # Replace with second camera points if different
-        X_3D = triangulate_points(p1, p2, P1, P2)
-        points_3d[label] = X_3D
+        # 2) Measure baseline (distance between camera centers)
+        baseline = get_baseline(camera_left_obj, camera_right_obj)
+    
+        
+        # 3) Perform triangulation
+        point_3d_left_cam = stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline)
+        
+        if point_3d_left_cam is None:
+            return
 
-    print("3D points computed successfully.", points_3d)
 
-
+        # (Optional) Convert that point into Blender World coordinates
+        # by transforming from the left camera's local frame to world frame.
+        # The left camera's matrix gives us the transform from local camera coords to world:
+        cam_left_matrix = camera_left_obj.matrix_world
+        
+        # In Blender, the camera typically looks along -Z in local space,
+        # but our stereo model above assumed +Z is forward. 
+        # For a pure parallel rectification, we might do a different transform.
+        # 
+        # A simple approach: rotate the triangulated point by a 180° rotation around X
+        # if you want to align the +Z forward with Blender's -Z. 
+        # Or, to be rigorous, you could do a full "camera local coords" approach.
+        # 
+        # For demonstration, let's define a "local camera to world" transform that accounts
+        # for the default camera orientation in Blender:
+        
+        # Step 1: local_stereo -> local_camera, rotate +Z to -Z:
+        # We'll do that by flipping the Z and Y axes: (X, Y, Z) -> (X, -Y, -Z)
+        flip_z = mathutils.Matrix([
+            [1,  0,  0],
+            [0, -1,  0],
+            [0,  0, -1],
+        ])
+        
+        # Transform the point from our "stereo local" to the camera's local
+        point_cam_local = flip_z @ point_3d_left_cam
+        
+        # Step 2: then transform from camera local to world
+        point_world = cam_left_matrix @ point_cam_local
+        points_3d[name] = point_world
+        print(f"{name}: {point_world}")
+        
+    with open("./out/reconstructed_3d_points.txt","w") as f:
+            for label,(x,y,z) in points_3d.items():
+                f.write(f"{label}, {x:.6f}, {y:.6f}, {z:.6f}\n")
 
