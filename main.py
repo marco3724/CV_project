@@ -1,6 +1,6 @@
 import subprocess
 from highlight_points import draw_skeleton
-
+import sys
 
 import subprocess
 
@@ -9,9 +9,9 @@ blender_path = "/usr/bin/blender"
 
 # Path to the Blender script you want to execute
 script_path = "./extract_info.py"
-
+print( sys.argv[1:])
 # Call Blender from the command line with the script
-subprocess.run([blender_path, '--background', '--python', script_path])
+subprocess.run([blender_path, '--background', '--python', script_path] + sys.argv[1:])
 
 
 

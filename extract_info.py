@@ -2,17 +2,28 @@
 import sys
 import os
 
+
 # Add the current directory or a specific directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'blender_scripts'))
-
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'utility'))
 from setup_env import setup_env
 from extract_3D_coordinates import extract_3d_coordinates
 from projection_2D import projection
+from utility import parse_args
+
+args = parse_args(sys.argv[4:])
+
+ncam = 2 if  "n" not in args else  int(args["n"])
+ncam = 2 if ncam>2 else ncam
+
+position_offest =  (0,0,0) if  "p" not in args else args["p"]
+rotation = (0.13,0,0) if "r" not in args else args["r"]
+
 
 
 # Set up the scene
 fbx_file_path = "./assets/GiuliaRigged.fbx"
-cameras,armature = setup_env(fbx_file_path)
+cameras,armature = setup_env(fbx_file_path,num_cameras=ncam,position_offset = position_offest,rotation=rotation)
 
 
 output_base_dir = "./out"
