@@ -1,5 +1,5 @@
 import bpy
-def setup_env(fbx_file_path):
+def setup_env(fbx_file_path,num_cameras=1, baseline_distance=1.0):
 
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.select_all(action='SELECT')
@@ -22,11 +22,19 @@ def setup_env(fbx_file_path):
     armature.location = (0, 0, 0)
     bpy.context.view_layer.update()
 
-    # Add a camera object
-    camera = bpy.data.objects.new("Camera", bpy.data.cameras.new("Camera"))
-    bpy.context.collection.objects.link(camera)
-    camera.location = (0, -2, 25)  # 0, -2, 25
-    camera.rotation_euler = (0.13, 0, 0) # 0.13, 0, 0
-    bpy.context.scene.camera = camera
+    # Create the cameras
+    cameras = []
+    for i in range(num_cameras):
+        # Calculate camera position along the baseline
+        x_position = 0 if num_cameras == 1 else (-baseline_distance / 2) + (i * (baseline_distance / (num_cameras - 1)))
+        camera = bpy.data.objects.new(f"Camera_{i + 1}", bpy.data.cameras.new(f"Camera_{i + 1}"))
+        bpy.context.collection.objects.link(camera)
+
+        # Set camera position and orientation
+        camera.location = (x_position, -2, 25)  # Fixed Y and Z, aligned along X
+        camera.rotation_euler = (0.13, 0, 0)  # Look straight ahead
+        cameras.append(camera)
+
+    # Set the first camera as the active scene camera
     bpy.context.view_layer.update()
-    return (camera,armature)
+    return (cameras,armature)

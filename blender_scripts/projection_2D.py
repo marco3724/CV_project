@@ -44,6 +44,7 @@ def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
     # Define the output file path for the rendered image
     render_output_path = bpy.path.abspath(output_render)  # Save in the same directory as the .blend file
 
+    bpy.context.scene.camera = camera
     # Ensure the camera is set up in the scene
     if bpy.context.scene.camera is None:
         print("Error: No camera found in the scene.")

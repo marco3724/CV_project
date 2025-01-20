@@ -19,9 +19,9 @@ subprocess.run([blender_path, '--background', '--python', script_path])
 # Example usage
 
 output_base_dir = "./out"
-image_path = output_base_dir+"/render.png"
-coordinates_file = output_base_dir + "/bones_2D_coordinates.txt"  # File containing 2D bone coordinates
-bone_pairs_file = output_base_dir + "/bone_pairs.txt"            # File containing bone pairs
-output_path = output_base_dir + "/skeleton.png"
-
-draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path)
+for i in range(1,3):
+    image_path = output_base_dir+f"/render_{i}.png"
+    coordinates_file = output_base_dir + f"/bones_2D_coordinates_{i}.txt"  # File containing 2D bone coordinates
+    bone_pairs_file = output_base_dir + "/bone_pairs.txt"            # File containing bone pairs
+    output_path = output_base_dir + f"/skeleton_{i}.png"
+    draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path)
