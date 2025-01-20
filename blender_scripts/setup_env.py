@@ -36,6 +36,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
         camera.location = (x_position + px, -2 + py, 25 + pz)  # Fixed Y and Z, aligned along X
         camera.rotation_euler =   rotation # Look straight ahead
         cameras.append(camera)
+        
 
     # Set the first camera as the active scene camera
     bpy.context.view_layer.update()
