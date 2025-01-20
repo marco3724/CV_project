@@ -59,6 +59,7 @@ def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
             print("Render completed successfully.")
         else:
             print("Render failed. Check the file path and permissions.")
+    return bone_coordinates_2d
     
         
         

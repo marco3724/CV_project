@@ -57,12 +57,12 @@ def draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path):
     cv2.imwrite(output_path, image)
     print(f"Skeleton image saved to {output_path}")
 
-    # Debugging output for verification
-    print("Coordinates:")
-    for bone_name, coord in coordinates.items():
-        print(f"{bone_name}: {coord}")
+    # # Debugging output for verification
+    # print("Coordinates:")
+    # for bone_name, coord in coordinates.items():
+    #     print(f"{bone_name}: {coord}")
 
-    print("\nBone pairs:")
-    for child, parent in bone_pairs:
-        print(f"{child} -> {parent}")
+    # print("\nBone pairs:")
+    # for child, parent in bone_pairs:
+    #     print(f"{child} -> {parent}")
 
