@@ -1,22 +1,6 @@
 import bpy
 import numpy as np
 import cv2
-
-# Load 2D coordinates from the file
-def load_2d_coordinates(file_path):
-    points_2d = {}
-    with open(file_path, 'r') as file:
-        for line in file:
-            parts = line.strip().split(',')
-            label = parts[0].strip()
-            x = float(parts[1].strip())
-            y = float(parts[2].strip())
-            points_2d[label] = (x, y)
-    return points_2d
-
-
-
-import bpy
 import mathutils
 
 def get_camera_intrinsics_and_pp(camera_obj, scene):
