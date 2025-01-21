@@ -80,7 +80,7 @@ def stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline):
     return mathutils.Vector((X, Y, Z))
 
 
-def compute_3d_points(pts1, pts2, cam1, cam2):
+def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
 # Get the scene
     scene = bpy.context.scene
 
@@ -97,12 +97,18 @@ def compute_3d_points(pts1, pts2, cam1, cam2):
     # Example 2D points for the SAME feature in each camera
     # (These are hypothetical pixel coords in the final render)
     points_3d = {}
-    for ((name, coord1),(_, coord2)) in zip(pts1, pts2):
+    # for ((name1, coord1),(name2, coord2)) in zip(pts1, pts2):
+    for name, coord in pts1.items():
+        if name not in pts2:
+            continue
 
-        xL = coord1[0]
-        yL = coord1[1]
-        xR = coord2[0]
-        yR = coord2[1]
+        # We need to convert coordinates from normalized camera coordinates
+        # to pixel coordinates in order to triangulate the 3D point
+        
+        xL = coord[0]
+        yL = coord[1]
+        xR = pts2[name][0]
+        yR = pts2[name][1]
 
         width = scene.render.resolution_x
         height = scene.render.resolution_y
@@ -112,12 +118,13 @@ def compute_3d_points(pts1, pts2, cam1, cam2):
         vL = (1 - yL) * height
 
         uR = xR * width
+
         # Sometimes Blender’s y=0 is at the bottom; for a standard top-left origin, you might do:
         vR = (1 - yR) * height
 
         # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
         f, cx, cy = get_camera_intrinsics_and_pp(camera_left_obj, scene)
-     
+    
         
         # 2) Measure baseline (distance between camera centers)
         baseline = get_baseline(camera_left_obj, camera_right_obj)
@@ -161,7 +168,7 @@ def compute_3d_points(pts1, pts2, cam1, cam2):
         point_world = cam_left_matrix @ point_cam_local
         points_3d[name] = point_world
         print(f"{name}: {point_world}")
-        
+            
     with open("./out/reconstructed_3d_points.txt","w") as f:
             for label,(x,y,z) in points_3d.items():
                 f.write(f"{label}, {x:.6f}, {y:.6f}, {z:.6f}\n")

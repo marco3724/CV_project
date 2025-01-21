@@ -23,7 +23,7 @@ def is_point_visible(ndc):
 
 def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
     # Retrieve the 2D coordinates of all bones
-    bone_coordinates_2d = []
+    bone_coordinates_2d = {}
     scene = bpy.context.scene
     for bone_name, coord in bone_coordinates_3d:
         # Convert 3D global coordinates to 2D screen space
@@ -31,11 +31,11 @@ def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
         coord_2d = world_to_camera_view(scene, camera, coord)
 
         if is_point_visible(coord_2d):
-            bone_coordinates_2d.append((bone_name, coord_2d))
+            bone_coordinates_2d[bone_name] = coord_2d
 
     # Write the 2D bone coordinates to a text file
     with open(output_file_path_2d, "w") as file:
-        for bone_name, coord in bone_coordinates_2d:
+        for bone_name, coord in bone_coordinates_2d.items():
             file.write(f"{bone_name}, {coord.x:.6f}, {coord.y:.6f}\n")
 
     print(f"2D bone coordinates have been saved to {output_file_path_2d}")

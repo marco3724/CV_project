@@ -24,7 +24,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
 
     # Create the cameras
     cameras = []
-    baseline_distance=2.0
+    baseline_distance = 2.0
     px,py,pz = position_offset
     for i in range(num_cameras):
         # Calculate camera position along the baseline
