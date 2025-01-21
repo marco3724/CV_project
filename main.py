@@ -34,3 +34,18 @@ for i in range(ncam):
     bone_pairs_file = output_base_dir + "/bone_pairs.txt"            # File containing bone pairs
     output_path = output_base_dir + f"/skeleton_{n}.png"
     draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path)
+    
+if n==2:
+    #  Statistic fo the reconstruction
+    file_path = './out/bones_3D_coordinates.txt'
+    estimated_coordinates = utility.utility.create_coordinates_map('./out/reconstructed_3d_points.txt')
+    extracted_coordinates = utility.utility.create_coordinates_map('./out/bones_3D_coordinates.txt')
+    # Print the resulting map
+    x,y,z = 0,0,0
+    for label, coords in estimated_coordinates.items():
+            x += abs(coords['x'] - extracted_coordinates[label]['x'])
+            y += abs(coords['y'] - extracted_coordinates[label]['y'])
+            z += abs(coords['z'] - extracted_coordinates[label]['z'])
+    print(f"Average error in x: {x/len(estimated_coordinates)}")
+    print(f"Average error in y: {y/len(estimated_coordinates)}")    
+    print(f"Average error in z: {z/len(estimated_coordinates)}")

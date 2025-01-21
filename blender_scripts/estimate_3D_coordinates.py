@@ -1,6 +1,4 @@
 import bpy
-import numpy as np
-import cv2
 import mathutils
 
 def get_camera_intrinsics_and_pp(camera_obj, scene):

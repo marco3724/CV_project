@@ -16,3 +16,16 @@ def parse_args(args):
             
         named_args[name] = value
     return named_args
+
+
+
+def create_coordinates_map(file_path):
+    coordinates_map = {}
+    with open(file_path, 'r') as file:
+        for line in file:
+            parts = line.strip().split(',')
+            if len(parts) == 4: 
+                label = parts[0].strip()
+                x, y, z = map(float, parts[1:])
+                coordinates_map[label] = {'x': x, 'y': y, 'z': z}
+    return coordinates_map
