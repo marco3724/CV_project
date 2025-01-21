@@ -1,7 +1,16 @@
+# Get the intris params such as the focal lenght, principal component and baseline(even though we asleady known)
+# for each point convert the normalized coordinates to pixel coordinates
+# perform triangulation
+# transform the point from stereo local to camera local
+# transform the point from camera local to world
+# save the 3d points to a file
+
+
+
 import bpy
 import mathutils
 
-def get_camera_intrinsics_and_pp(camera_obj, scene):
+def get_camera_intrinsics(camera_obj, scene):
     """
     Retrieve focal length in pixel units (f) and principal point (cx, cy)
     from the Blender camera and the scene's render settings.
@@ -49,6 +58,7 @@ def get_baseline(camera_left, camera_right):
     loc_left = camera_left.matrix_world.translation
     loc_right = camera_right.matrix_world.translation
     baseline_vector = loc_right - loc_left
+    print(f"Baseline vector: {baseline_vector} {baseline_vector.length}")
     return baseline_vector.length
 
 def stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline):
@@ -93,68 +103,37 @@ def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
     if camera_left_obj is None or camera_right_obj is None:
         print("Error: Could not find CameraLeft or CameraRight.")
         return
+    # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
+    f, cx, cy = get_camera_intrinsics(camera_left_obj, scene)
 
-    # Example 2D points for the SAME feature in each camera
-    # (These are hypothetical pixel coords in the final render)
+    
+    # 2) Measure baseline (distance between camera centers)
+    baseline = get_baseline(camera_left_obj, camera_right_obj)
     points_3d = {}
-    # for ((name1, coord1),(name2, coord2)) in zip(pts1, pts2):
     for name, coord in pts1.items():
         if name not in pts2:
             continue
 
         # We need to convert coordinates from normalized camera coordinates
         # to pixel coordinates in order to triangulate the 3D point
-        
-        xL = coord[0]
-        yL = coord[1]
-        xR = pts2[name][0]
-        yR = pts2[name][1]
+        xL,yL,_ = coord
+        xR,yR,_ = pts2[name]
 
         width = scene.render.resolution_x
         height = scene.render.resolution_y
-
-        uL = xL * width
-        # Sometimes Blender’s y=0 is at the bottom; for a standard top-left origin, you might do:
+        # Convert from normalized to pixel coordinates, Blender’s y=0 is at the bottom; for a standard top-left origin we do 1-y
         vL = (1 - yL) * height
-
-        uR = xR * width
-
-        # Sometimes Blender’s y=0 is at the bottom; for a standard top-left origin, you might do:
         vR = (1 - yR) * height
-
-        # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
-        f, cx, cy = get_camera_intrinsics_and_pp(camera_left_obj, scene)
-    
+        uR = xR * width
+        uL = xL * width
         
-        # 2) Measure baseline (distance between camera centers)
-        baseline = get_baseline(camera_left_obj, camera_right_obj)
     
-        
         # 3) Perform triangulation
         point_3d_left_cam = stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline)
-        
         if point_3d_left_cam is None:
             return
-
-
-        # (Optional) Convert that point into Blender World coordinates
-        # by transforming from the left camera's local frame to world frame.
-        # The left camera's matrix gives us the transform from local camera coords to world:
-        cam_left_matrix = camera_left_obj.matrix_world
         
-        # In Blender, the camera typically looks along -Z in local space,
-        # but our stereo model above assumed +Z is forward. 
-        # For a pure parallel rectification, we might do a different transform.
-        # 
-        # A simple approach: rotate the triangulated point by a 180° rotation around X
-        # if you want to align the +Z forward with Blender's -Z. 
-        # Or, to be rigorous, you could do a full "camera local coords" approach.
-        # 
-        # For demonstration, let's define a "local camera to world" transform that accounts
-        # for the default camera orientation in Blender:
-        
-        # Step 1: local_stereo -> local_camera, rotate +Z to -Z:
-        # We'll do that by flipping the Z and Y axes: (X, Y, Z) -> (X, -Y, -Z)
+        # Compensate blender by flipping the Z and Y axes: (X, Y, Z) -> (X, -Y, -Z)
         flip_z = mathutils.Matrix([
             [1,  0,  0],
             [0, -1,  0],
@@ -165,11 +144,13 @@ def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
         point_cam_local = flip_z @ point_3d_left_cam
         
         # Step 2: then transform from camera local to world
-        point_world = cam_left_matrix @ point_cam_local
+        point_world = camera_left_obj.matrix_world @ point_cam_local
         points_3d[name] = point_world
-        print(f"{name}: {point_world}")
             
     with open("./out/reconstructed_3d_points.txt","w") as f:
             for label,(x,y,z) in points_3d.items():
                 f.write(f"{label}, {x:.6f}, {y:.6f}, {z:.6f}\n")
+
+
+
 
