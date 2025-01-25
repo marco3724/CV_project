@@ -25,12 +25,14 @@ def get_camera_intrinsics(camera_obj, scene):
     
     # Focal length in mm
     focal_mm = cam_data.lens
-    
     # Sensor size in mm. We pick sensor_width unless sensor_fit='VERTICAL'
     if cam_data.sensor_fit != 'VERTICAL':
         sensor_size_mm = cam_data.sensor_width
     else:
         sensor_size_mm = cam_data.sensor_height
+
+    print(f"Focal length: {focal_mm} mm | Sensor size: {sensor_size_mm} mm")
+    print(f"Resolution: {cam_data.sensor_width} x { cam_data.sensor_height}")
 
     # Convert focal length in mm -> focal length in pixel units
     # (assuming no special aspect ratio issues for simplicity)
@@ -91,10 +93,9 @@ def stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline):
 
 
 def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
-# Get the scene
+    #Get the scene
     scene = bpy.context.scene
 
-    # Identify your cameras by name
     camera_left_obj = cam1
     camera_right_obj = cam2
 
@@ -105,7 +106,7 @@ def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
         return
     # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
     f, cx, cy = get_camera_intrinsics(camera_left_obj, scene)
-
+    print(f"Camera intrinsics: f={f}, cx={cx}, cy={cy}")
     
     # 2) Measure baseline (distance between camera centers)
     baseline = get_baseline(camera_left_obj, camera_right_obj)
@@ -139,8 +140,6 @@ def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
             [0, -1,  0],
             [0,  0, -1],
         ])
-        
-        # Transform the point from our "stereo local" to the camera's local
         point_cam_local = flip_z @ point_3d_left_cam
         
         # Step 2: then transform from camera local to world
