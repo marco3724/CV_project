@@ -1,29 +1,28 @@
 import bpy
-def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.13,0,0)):
+def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.13,0,0),light=False):
 
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
         
+    print(f"Setting up the env with {num_cameras} cameras, and offset of {position_offset}, and rotation of {rotation} and light {light}")
+    if light:
+        # Create a new sun light data block
+        light_data = bpy.data.lights.new(name="Sun_Light", type='SUN')
 
+        # Create a new light object
+        light_object = bpy.data.objects.new(name="Sun_Light", object_data=light_data)
 
-    # Create a new sun light data block
-    light_data = bpy.data.lights.new(name="Sun_Light", type='SUN')
-
-    # Create a new light object
-    light_object = bpy.data.objects.new(name="Sun_Light", object_data=light_data)
-
-    # Set light position and rotation
-    light_object.location = (0, 0, 100)
-    light_object.rotation_euler = (0, 0, 0) 
- 
-    # Link the light object to the active collection
-    bpy.context.collection.objects.link(light_object)
+        # Set light position and rotation
+        light_object.location = (0, 0, 100)
+        light_object.rotation_euler = (0, 0, 0) 
     
+        # Link the light object to the active collection
+        bpy.context.collection.objects.link(light_object)
+        
     # Import the FBX file
     bpy.ops.import_scene.fbx(filepath=fbx_file_path)
     
-    print(f"Setting up the env with {num_cameras} cameras, and offset of {position_offset}, and rotation of {rotation}")
     # Get the imported armature object
     armature = None
     for obj in bpy.context.scene.objects:

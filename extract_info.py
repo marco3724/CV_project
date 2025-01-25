@@ -20,12 +20,13 @@ ncam = 1 if ncam<1 else ncam
 
 position_offest =  (0,0,0) if  "p" not in args else args["p"]
 rotation = (0.13,0,0) if "r" not in args else args["r"]
+light = False if "l" not in args else args["l"]
 
 
 
 # Set up the scene
 fbx_file_path = "./assets/GiuliaRigged.fbx"
-cameras,armature = setup_env(fbx_file_path,num_cameras=ncam,position_offset = position_offest,rotation=rotation)
+cameras,armature = setup_env(fbx_file_path,num_cameras=ncam,position_offset = position_offest,rotation=rotation,light=light)
 
 
 output_base_dir = "./out"

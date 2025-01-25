@@ -54,7 +54,7 @@ def projection(camera,bone_coordinates_3d,output_file_path_2d,output_render):
         bpy.ops.render.render(write_still=True)
         print(f"Render saved to {render_output_path}")
 
-        # Optional: Verify the file exists
+        # Verify the file exists
         if os.path.exists(render_output_path):
             print("Render completed successfully.")
         else:
