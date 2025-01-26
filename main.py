@@ -48,7 +48,7 @@ if n==2:
 
     (mpjpe, ax, ay, az) = utility.utility.compute_results(common_labels,estimated_coordinates, extracted_coordinates)
     # All values are mutliplied by 1000 to obtain measure in mm
-    print(f"Mean Per Joint Position Error (MPJPE): {mpjpe * 1000}")
-    print(f"Mean Absolute Error X: {ax * 1000}")
-    print(f"Mean Absolute Error Y: {ay * 1000}")
-    print(f"Mean Absolute Error Z: {az * 1000}")
+    print(f"Mean Per Joint Position Error (MPJPE): {mpjpe * 1000} mm")
+    print(f"Mean Absolute Error X: {ax * 1000} mm")
+    print(f"Mean Absolute Error Y: {ay * 1000} mm")
+    print(f"Mean Absolute Error Z: {az * 1000} mm")

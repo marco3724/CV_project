@@ -33,7 +33,7 @@ The main script, `main.py`, coordinates the workflow and allows you to pass argu
 | Argument     | Description                                              | Format                 |
 |--------------|----------------------------------------------------------|------------------------|
 | `-n`         | Number of cameras to use in the setup                    | Integer (e.g., 2)      |
-| `-p`         | Position offset of the cameras in cm                     | `x,y,z` (e.g., 1,0,0)  |
+| `-t`         | Translation offset of the cameras in cm                  | `x,y,z` (e.g., 1,0,0)  |
 | `-r`         | Rotation of the cameras                                  | `x,y,z` (e.g., 0,90,0) |
 | `-l`         | Set a light source                                       | (`True` of `False`)    |
 
@@ -44,4 +44,4 @@ The main script, `main.py`, coordinates the workflow and allows you to pass argu
    python main.py 
 2. **Run with parameters**
    ```bash
-    python main.py -n 2 -p 1,0,0 -r 0,90,0
+    python main.py -n 2 -t 1,0,0 -r 0,90,0

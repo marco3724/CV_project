@@ -18,7 +18,7 @@ ncam = 2 if  "n" not in args else  int(args["n"])
 ncam = 2 if ncam>2 else ncam
 ncam = 1 if ncam<1 else ncam
 
-position_offest =  (0,0,0) if  "p" not in args else args["p"]
+position_offest =  (0,0,0) if  "t" not in args else args["t"]
 rotation = (0.16,0,0) if "r" not in args else args["r"]
 light = False if "l" not in args else args["l"]
 
