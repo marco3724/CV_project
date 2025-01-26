@@ -30,11 +30,12 @@ The main script, `main.py`, coordinates the workflow and allows you to pass argu
 
 ### Command-Line Arguments
 
-| Argument     | Description                                              | Format             |
-|--------------|----------------------------------------------------------|--------------------|
-| `-n`         | Number of cameras to use in the setup                    | Integer (e.g., 2)  |
-| `-p`         | Position offset of the cameras                           | `x,y,z` (e.g., 1,0,0) |
+| Argument     | Description                                              | Format                 |
+|--------------|----------------------------------------------------------|------------------------|
+| `-n`         | Number of cameras to use in the setup                    | Integer (e.g., 2)      |
+| `-p`         | Position offset of the cameras in cm                     | `x,y,z` (e.g., 1,0,0)  |
 | `-r`         | Rotation of the cameras                                  | `x,y,z` (e.g., 0,90,0) |
+| `-l`         | Set a light source                                       | (`True` of `False`)    |
 
 ### Example Usage
 

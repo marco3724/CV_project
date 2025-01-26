@@ -4,8 +4,9 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
-        
-    print(f"Setting up the env with {num_cameras} cameras, and offset of {position_offset}, and rotation of {rotation} and light {light}")
+    position_offset = [x*0.01 for x in position_offset] #cm
+   
+    print(f"Setting up the env with {num_cameras} cameras, and offset of {position_offset} cm, and rotation of {rotation} and light {light}")
     if light:
         # Create a new sun light data block
         light_data = bpy.data.lights.new(name="Sun_Light", type='SUN')
@@ -40,7 +41,9 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
 
     # Create the cameras
     cameras = []
-    baseline_distance = 0.2
+    baseline_distance = 2 * 0.01 #cm
+   
+
     px,py,pz = position_offset
     for i in range(num_cameras):
         # Calculate camera position along the baseline
@@ -49,7 +52,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
         bpy.context.collection.objects.link(camera)
 
         # Set camera position and orientation
-        camera.location = (x_position + px, -0.2 + py, 2.5 + pz)  # Fixed Y and Z, aligned along X
+        camera.location = (x_position + px, -0.2 + py, 2.8 + pz)  # Fixed Y and Z, aligned along X
         camera.rotation_euler =   rotation # Look straight ahead
         cameras.append(camera)
         
