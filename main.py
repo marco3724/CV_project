@@ -34,22 +34,21 @@ for i in range(ncam):
     bone_pairs_file = output_base_dir + "/bone_pairs.txt"            # File containing bone pairs
     output_path = output_base_dir + f"/skeleton_{n}.png"
     draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path)
-    
+
 if n==2:
-
-
 
     #  Statistic fo the reconstruction
     file_path = './out/bones_3D_coordinates.txt'
     estimated_coordinates = utility.utility.create_coordinates_map('./out/reconstructed_3d_points.txt')
     extracted_coordinates = utility.utility.create_coordinates_map('./out/bones_3D_coordinates.txt')
-    
+
 
     # Find common labels
     common_labels = set(estimated_coordinates.keys()).intersection(extracted_coordinates.keys())
-    
+
     (mpjpe, ax, ay, az) = utility.utility.compute_results(common_labels,estimated_coordinates, extracted_coordinates)
-    print(f"Mean Per Joint Position Error (MPJPE): {mpjpe}")
-    print(f"Mean Absolute Error X: {ax}")
-    print(f"Mean Absolute Error Y: {ay}")
-    print(f"Mean Absolute Error Z: {az}")
+    # All values are mutliplied by 1000 to obtain measure in mm
+    print(f"Mean Per Joint Position Error (MPJPE): {mpjpe * 1000}")
+    print(f"Mean Absolute Error X: {ax * 1000}")
+    print(f"Mean Absolute Error Y: {ay * 1000}")
+    print(f"Mean Absolute Error Z: {az * 1000}")
