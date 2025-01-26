@@ -35,11 +35,12 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
 
     # Move the armature to the origin
     armature.location = (0, 0, 0)
+    armature.delta_scale = (0.115,0.115,0.115)
     bpy.context.view_layer.update()
 
     # Create the cameras
     cameras = []
-    baseline_distance = 2.0
+    baseline_distance = 0.2
     px,py,pz = position_offset
     for i in range(num_cameras):
         # Calculate camera position along the baseline
@@ -48,7 +49,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
         bpy.context.collection.objects.link(camera)
 
         # Set camera position and orientation
-        camera.location = (x_position + px, -2 + py, 25 + pz)  # Fixed Y and Z, aligned along X
+        camera.location = (x_position + px, -0.2 + py, 2.5 + pz)  # Fixed Y and Z, aligned along X
         camera.rotation_euler =   rotation # Look straight ahead
         cameras.append(camera)
         

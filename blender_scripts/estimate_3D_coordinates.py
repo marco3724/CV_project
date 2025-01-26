@@ -5,8 +5,6 @@
 # transform the point from camera local to world
 # save the 3d points to a file
 
-
-
 import bpy
 import mathutils
 
