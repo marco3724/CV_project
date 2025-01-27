@@ -1,14 +1,6 @@
 import cv2
 
 def draw_skeleton(image_path, coordinates_file, bone_pairs_file, output_path):
-    """
-    Draws a skeleton on an image using normalized coordinates and bone pairs.
-
-    :param image_path: Path to the input image.
-    :param coordinates_file: Path to the text file containing normalized 2D coordinates.
-    :param bone_pairs_file: Path to the text file containing bone pairs.
-    :param output_path: Path to save the output image.
-    """
     # Read the image
     image = cv2.imread(image_path)
     if image is None:

@@ -3,12 +3,7 @@ import bpy
 from bpy_extras.object_utils import world_to_camera_view
 
 def is_point_visible(ndc):
-    """
-    Determines if a point in NDC is visible within the camera's view frustum.
-    
-    :param ndc: Vector containing NDC coordinates (x, y, z)
-    :return: Boolean indicating visibility
-    """
+
     # Check if the point is in front of the camera
     if ndc.z < 0.0:
         return False

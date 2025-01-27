@@ -1,19 +1,7 @@
-# Get the intris params such as the focal lenght, principal component and baseline(even though we asleady known)
-# for each point convert the normalized coordinates to pixel coordinates
-# perform triangulation
-# transform the point from stereo local to camera local
-# transform the point from camera local to world
-# save the 3d points to a file
-
 import bpy
 import mathutils
 
 def get_camera_intrinsics(camera_obj, scene):
-    """
-    Retrieve focal length in pixel units (f) and principal point (cx, cy)
-    from the Blender camera and the scene's render settings.
-    This is a simplified approach (no distortion).
-    """
     cam_data = camera_obj.data
     render = scene.render
     
@@ -33,7 +21,6 @@ def get_camera_intrinsics(camera_obj, scene):
     print(f"Resolution: {cam_data.sensor_width} x { cam_data.sensor_height}")
 
     # Convert focal length in mm -> focal length in pixel units
-    # (assuming no special aspect ratio issues for simplicity)
     f = (focal_mm / sensor_size_mm) * width
     
     # Principal point (cx, cy):
@@ -50,11 +37,7 @@ def get_camera_intrinsics(camera_obj, scene):
     return f, cx, cy
 
 def get_baseline(camera_left, camera_right):
-    """
-    Returns the distance (baseline) between the two camera centers in 3D space.
-    If the cameras are truly parallel along the X-axis, this is effectively
-    the difference in X coordinates. But we'll compute the full Euclidean distance.
-    """
+
     loc_left = camera_left.matrix_world.translation
     loc_right = camera_right.matrix_world.translation
     baseline_vector = loc_right - loc_left
@@ -62,28 +45,14 @@ def get_baseline(camera_left, camera_right):
     return baseline_vector.length
 
 def stereo_triangulate(uL, vL, uR, vR, f, cx, cy, baseline):
-    """
-    Triangulates a 3D point under a parallel stereo assumption:
-    - (uL, vL) in left camera
-    - (uR, vR) in right camera
-    - f : focal length (in pixel units)
-    - (cx, cy): principal point
-    - baseline: distance between cameras
-    
-    Returns a Vector((X, Y, Z)) in the LEFT camera coordinate system,
-    assuming the left camera is at (0,0,0) looking along +Z 
-    with the image plane at Z=f and principal point at (cx, cy).
-    """
     # Disparity
     disparity = (uL - uR)
     if abs(disparity) < 1e-9:
-        print("Warning: Disparity is near zero; point might be infinitely far or matched incorrectly.")
+        print("Warning: Disparity is near zero")
         return None
 
     # Depth from the standard formula Z = f * B / disparity
     Z = (f * baseline) / disparity
-
-    # X, Y from the left camera's perspective
     X = (uL - cx) * Z / f
     Y = (vL - cy) * Z / f
 
@@ -102,7 +71,7 @@ def compute_3d_points(pts1: dict, pts2: dict, cam1, cam2):
     if camera_left_obj is None or camera_right_obj is None:
         print("Error: Could not find CameraLeft or CameraRight.")
         return
-    # 1) Get intrinsics from the left camera (assuming left & right share same intrinsics)
+    # 1) Get intrinsics from the camera 
     f, cx, cy = get_camera_intrinsics(camera_left_obj, scene)
     print(f"Camera intrinsics: f={f}, cx={cx}, cy={cy}")
     
