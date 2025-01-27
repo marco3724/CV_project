@@ -5,7 +5,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
     position_offset = [x*0.01 for x in position_offset] #cm
-   
+
     print(f"Setting up the env with {num_cameras} cameras, and offset of {position_offset} cm, and rotation of {rotation} and light {light}")
     if light:
         # Create a new sun light data block
@@ -16,14 +16,14 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
 
         # Set light position and rotation
         light_object.location = (0, 0, 100)
-        light_object.rotation_euler = (0, 0, 0) 
-    
+        light_object.rotation_euler = (0, 0, 0)
+
         # Link the light object to the active collection
         bpy.context.collection.objects.link(light_object)
-        
+
     # Import the FBX file
     bpy.ops.import_scene.fbx(filepath=fbx_file_path)
-    
+
     # Get the imported armature object
     armature = None
     for obj in bpy.context.scene.objects:
@@ -41,8 +41,8 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
 
     # Create the cameras
     cameras = []
-    baseline_distance = 2 * 0.01 #cm
-   
+    baseline_distance = 12 * 0.01 #cm
+
 
     px,py,pz = position_offset
     for i in range(num_cameras):
@@ -55,7 +55,7 @@ def setup_env(fbx_file_path,num_cameras=1,position_offset = (0,0,0),rotation=(0.
         camera.location = (x_position + px, -0.2 + py, 2.8 + pz)  # Fixed Y and Z, aligned along X
         camera.rotation_euler =   rotation # Look straight ahead
         cameras.append(camera)
-        
+
 
     # Set the first camera as the active scene camera
     bpy.context.view_layer.update()
