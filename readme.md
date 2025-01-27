@@ -27,7 +27,7 @@ CV_PROJECT/
 - Blender (Ensure the executable path is configured correctly)
 - Change the path in  `main.py` file !!!!
 
-if dependencies error appiers, install the requirements globally `sudo apt install python3-xyz` (replace `xyz` with the python package you want to install)
+if dependencies error appears, install the requirements globally `sudo apt install python3-xyz` (replace `xyz` with the python package you want to install)
 ```
 # Path to the Blender executable (adjust according to your system)
 blender_path = "/usr/bin/blender"
