@@ -5,6 +5,18 @@ import sys
 import subprocess
 import utility
 import utility.utility
+import os
+
+
+# Create output folder
+output_base_dir = "./out"
+if not os.path.exists(output_base_dir):
+    os.makedirs(output_base_dir)
+    print(f"Folder '{output_base_dir}' created.")
+else:
+    print(f"Folder '{output_base_dir}' already exists.")
+
+
 
 # Path to the Blender executable (adjust according to your system)
 blender_path = "/usr/bin/blender"
@@ -19,14 +31,12 @@ print("Arguments:", arguments)
 # Call Blender from the command line with the script
 subprocess.run(arguments)
 
-
-
 args = utility.utility.parse_args(sys.argv[1:])
 
 ncam = 2 if  "n" not in args else  int(args["n"])
 ncam = 2 if ncam>2 else ncam
 
-output_base_dir = "./out"
+
 for i in range(ncam):
     n = i+1
     image_path = output_base_dir+f"/render_{n}.png"
